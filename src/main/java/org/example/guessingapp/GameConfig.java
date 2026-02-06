@@ -1,5 +1,7 @@
 /*
  *
+ * Use Case 1 - Game Initialization
+ *
  * This is the Game Initialization
  * This displays all the rules maintained in the Game
  *
@@ -8,20 +10,16 @@
  *
  * */
 
-package org.example;
+package org.example.guessingapp;
 
 import java.util.Random;
 
 public class GameConfig  {
 
         private final int MIN = 1;
-
         private final int MAX = 100;
-
         private final int MAX_ATTEMPTS = 7;
-
         private final int MAX_HINTS = 3;
-
         private int targetNumber;
 
     public GameConfig() {
@@ -32,11 +30,9 @@ public class GameConfig  {
     public int getTargetNumber() {
         return targetNumber;
     }
-
     public int getMaxAttempts() {
         return MAX_ATTEMPTS;
     }
-
     public int getMaxHints() {
         return MAX_HINTS;
     }
