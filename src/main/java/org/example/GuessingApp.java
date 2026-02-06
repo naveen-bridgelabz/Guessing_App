@@ -2,6 +2,7 @@ package org.example;
 
 import org.example.guessingapp.GameConfig;
 import org.example.guessingapp.GuessValidator;
+import org.example.guessingapp.HintGenerator;
 
 import java.util.Scanner;
 
@@ -12,33 +13,43 @@ public class GuessingApp {
         System.out.println("Welcome to the Guessing App");
         System.out.println("----------------------------");
 
-        // Create GameConfig object
+        // UC1: Initialize game
         GameConfig config = new GameConfig();
-
-        // Display rules
         config.showRules();
 
-        // UC1 ends here
+        // UC3: Initialize HintGenerator ONCE
+        HintGenerator hintGenerator =
+                new HintGenerator(config.getMaxHints());
 
         Scanner input = new Scanner(System.in);
         int attempt = 0;
 
-        while ( attempt < config.getMaxAttempts() ){
-            System.out.println("Enter your number Guess : ");
+        // UC2: Game loop
+        while (attempt < config.getMaxAttempts()) {
+
+            System.out.print("Enter your number guess: ");
             int guess = input.nextInt();
             attempt++;
 
             String result = GuessValidator.validateGuess(
-              guess, config.getTargetNumber()
+                    guess,
+                    config.getTargetNumber()
             );
 
             System.out.println(result);
 
-            if("Result".equals(result)){
+            // UC3: Generate hint ONLY if guess is wrong
+            if (!"CORRECT".equals(result)) {
+                System.out.println(
+                        hintGenerator.generateHint(
+                                config.getTargetNumber()
+                        )
+                );
+            } else {
                 break;
             }
         }
-        input.close();
 
+        input.close();
     }
 }
