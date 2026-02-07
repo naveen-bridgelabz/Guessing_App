@@ -13,80 +13,96 @@ public class GuessingApp {
         System.out.println("----------------------------");
 
         Scanner input = new Scanner(System.in);
+        FileStorageService storageService = new FileStorageService();
 
-        // UC5: Player name
         System.out.print("Enter your name: ");
         String playerName = input.nextLine();
 
-        // UC1: Initialize game
-        GameConfig config = new GameConfig();
-        config.showRules();
+        boolean playAgain = true;
 
-        // UC3: Hint generator
-        HintGenerator hintGenerator =
-                new HintGenerator(config.getMaxHints());
+        // UC6: Restart loop (only used if player LOSES)
+        while (playAgain) {
 
-        // UC5: File storage service
-        FileStorageService storageService =
-                new FileStorageService();
+            // UC1: Initialize game (RESET happens here)
+            GameConfig config = new GameConfig();
+            HintGenerator hintGenerator =
+                    new HintGenerator(config.getMaxHints());
 
-        int attempt = 0;
-        boolean isWin = false;
+            config.showRules();
 
-        // UC2 + UC3 + UC4: Game loop
-        while (attempt < config.getMaxAttempts()) {
+            int attempt = 0;
+            boolean isWin = false;
 
-            try {
-                System.out.print("Enter your number guess: ");
-                int guess = input.nextInt();
+            // UC2 + UC3 + UC4: Guessing loop
+            while (attempt < config.getMaxAttempts()) {
 
-                // UC4: Range validation
-                if (guess < config.getMin() || guess > config.getMax()) {
-                    System.out.println(
-                            "Invalid input! Enter number between "
-                                    + config.getMin() + " and " + config.getMax()
+                try {
+                    System.out.print("Enter your number guess: ");
+                    int guess = input.nextInt();
+
+                    // UC4: Range validation
+                    if (guess < config.getMin() || guess > config.getMax()) {
+                        System.out.println(
+                                "Invalid input! Enter number between "
+                                        + config.getMin() + " and " + config.getMax()
+                        );
+                        continue; // do not count invalid attempt
+                    }
+
+                    attempt++;
+
+                    String result = GuessValidator.validateGuess(
+                            guess,
+                            config.getTargetNumber()
                     );
-                    continue;
-                }
 
-                attempt++;
+                    System.out.println(result);
 
-                String result = GuessValidator.validateGuess(
-                        guess,
-                        config.getTargetNumber()
-                );
+                    // ✅ EXIT IMMEDIATELY ON CORRECT GUESS
+                    if ("CORRECT".equals(result)) {
+                        System.out.println(
+                                "🎉 Congratulations! You guessed the number in "
+                                        + attempt + " attempts."
+                        );
+                        isWin = true;
+                        break; // exits guessing loop immediately
+                    }
 
-                System.out.println(result);
-
-                if (!"CORRECT".equals(result)) {
+                    // ✅ HINT ONLY FOR WRONG GUESS
                     System.out.println(
                             hintGenerator.generateHint(
                                     config.getTargetNumber()
                             )
                     );
-                } else {
-                    System.out.println(
-                            "Congratulations! You guessed the number in "
-                                    + attempt + " attempts."
-                    );
-                    isWin = true;
-                    break;
-                }
 
-            } catch (InputMismatchException e) {
-                System.out.println("Invalid input! Numbers only.");
-                input.next();
+                } catch (InputMismatchException e) {
+                    System.out.println("Invalid input! Numbers only.");
+                    input.next(); // clear invalid input
+                }
+            }
+
+            // UC5: Save game result
+            GameResult gameResult =
+                    new GameResult(playerName, attempt, isWin);
+            storageService.saveResult(gameResult);
+
+            // ✅ EXIT GAME COMPLETELY IF WON
+            if (isWin) {
+                System.out.println("Game completed successfully. Exiting...");
+                break; // exits playAgain loop
+            }
+
+            // UC6: Ask replay ONLY if player LOST
+            input.nextLine(); // clear buffer
+            System.out.print("Do you want to play again? (Y/N): ");
+            String choice = input.nextLine();
+
+            if (!choice.equalsIgnoreCase("Y")) {
+                playAgain = false;
             }
         }
 
-        // UC5: Save game result
-        GameResult gameResult =
-                new GameResult(playerName, attempt, isWin);
-
-        storageService.saveResult(gameResult);
-
         input.close();
-        System.out.println("Game result saved successfully.");
-        System.out.println("Game Over. Thank you for playing!");
+        System.out.println("Thank you for playing. Goodbye!");
     }
 }
