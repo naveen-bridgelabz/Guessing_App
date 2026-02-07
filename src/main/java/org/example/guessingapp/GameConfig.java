@@ -36,6 +36,8 @@ public class GameConfig  {
     public int getMaxHints() {
         return MAX_HINTS;
     }
+    public int getMin() {return MIN;}
+    public int getMax() {return MAX;}
 
     public void showRules() {
         System.out.println("Guess a number between " + MIN + " and " + MAX);
